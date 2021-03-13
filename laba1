@@ -14,18 +14,10 @@ public:
         y_ = 0;
     };
 
-    CPoint(float x, float y) // конструктор float
+    CPoint(float x, float y) // конструктор
         : x_(x)
         , y_(y)
     {
-        cout << "float\n";
-    };
-
-    CPoint(int x, int y) // конструктор int
-        : x_(x)
-        , y_(y)
-    {
-        cout << "int\n";
     };
 
     CPoint(const CPoint &t) // конструктор копирования
@@ -57,7 +49,7 @@ public:
     };
 
     ~CPoint() { // Деструктор
-        cout << "Delete Point\n";
+        //cout << "Delete Point\n";
     }
 };
 
@@ -108,7 +100,7 @@ public:
     };
 
     ~CBroken_Line() { // деструктор
-        cout << "Delete Broken Line\n";
+        //cout << "Delete Broken Line\n";
     }
 };
 
@@ -155,7 +147,7 @@ public:
         }
     }
     ~CClosed_Broken_Line() {
-        cout << "Delete Closet Broken Line\n";
+        //cout << "Delete Closet Broken Line\n";
     }
 };
 
@@ -210,7 +202,7 @@ public:
     };
 
     ~CPolygon() {
-        cout << "Delete Polygon\n";
+        //cout << "Delete Polygon\n";
     }
 };
 
@@ -224,9 +216,17 @@ public:
     };
 
     CTriangle(vector<CPoint> &mas_t) {
-        // проверка на треугольник
         for (int i = 0; i < mas_t.size(); i++) {
             cl_.push_back(mas_t[i]);
+        }
+        float a = CPolygon::Sqr();
+        try {
+            if (a == 0) {
+                throw -1;
+            }
+        }
+        catch (const int exception) {
+            cerr << "Error" << exception << "\n";
         }
     }
 
@@ -256,7 +256,7 @@ public:
     };
 
     ~CTriangle() {
-        cout << "Delete Triangle\n";
+        //cout << "Delete Triangle\n";
     }
 };
 
@@ -273,6 +273,15 @@ public:
         // проверка на трапецию
         for (int i = 0; i < mas_trap.size(); i++) {
             cl_.push_back(mas_trap[i]);
+        }
+        try {
+            if ((((cl_[1].get_y() - cl_[0].get_y())/(cl_[1].get_x() - cl_[0].get_x())) != ((cl_[3].get_y() - cl_[2].get_y())/(cl_[3].get_x() - cl_[2].get_x()))) and (((cl_[3].get_y() - cl_[0].get_y())/(cl_[3].get_x() - cl_[0].get_x())) != ((cl_[2].get_y() - cl_[1].get_y())/(cl_[2].get_x() - cl_[1].get_x())))) {
+                throw -1;
+            }
+        }
+        catch (const int exception) {
+            cerr << "Error" << exception << "\n";
+            return;
         }
     }
 
@@ -302,11 +311,11 @@ public:
     };
 
     ~CTrapezoid() {
-        cout << "Delete Trapezoid\n";
+        //cout << "Delete Trapezoid\n";
     }
 };
 
-class CRegular_Polygon : public CPolygon{
+class CRegular_Polygon : public CPolygon {
 private:
     float r_sqr_ = 0;
     float r_per_ = 0;
@@ -316,7 +325,6 @@ public:
     };
 
     CRegular_Polygon(vector<CPoint> &mas_r) {
-        // проверка на пр. многоугольник
         for (int i = 0; i < mas_r.size(); i++) {
             cl_.push_back(mas_r[i]);
         }
@@ -348,7 +356,7 @@ public:
     };
 
     ~CRegular_Polygon() {
-        cout << "Delete Regular Polygon\n";
+        //cout << "Delete Regular Polygon\n";
     }
 };
 
@@ -442,8 +450,8 @@ int main() {
     vector<CPoint> mas_trap(4);
     mas_trap[0] = CPoint(2, 1);
     mas_trap[1] = CPoint(4, 5);
-    mas_trap[2] = CPoint(6, 6);
-    mas_trap[3] = CPoint(8, 3);
+    mas_trap[2] = CPoint(6, 5);
+    mas_trap[3] = CPoint(8, 1);
     CTrapezoid trap1(mas_trap);
     cout << trap1.trap_Per() << "\n";
     cout << trap1.trap_Sqr() << "\n";

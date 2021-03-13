@@ -1,0 +1,482 @@
+#include <iostream>
+#include <math.h>
+#include <vector>
+
+using namespace std;
+
+class CPoint {
+protected:
+    float x_, y_;
+public:
+
+    CPoint() { // конструктор по умолчанию
+        x_ = 0;
+        y_ = 0;
+    };
+
+    CPoint(float x, float y) // конструктор float
+        : x_(x)
+        , y_(y)
+    {
+        cout << "float\n";
+    };
+
+    CPoint(int x, int y) // конструктор int
+        : x_(x)
+        , y_(y)
+    {
+        cout << "int\n";
+    };
+
+    CPoint(const CPoint &t) // конструктор копирования
+        : x_(t.x_)
+        , y_(t.y_)
+    {
+    };
+
+    CPoint& operator=(const CPoint &t) { // оператор присваивания
+        if (&t == this) {
+            return *this;
+        }
+        x_ = t.x_;
+        y_ = t.y_;
+
+        return *this;
+    };
+
+    float Dist_To_Zero() { // Расстояние до нуля
+        return sqrt(pow(x_, 2) + pow(y_, 2));
+    };
+
+    float get_x() const { // возвращение x
+        return x_;
+    };
+
+    float get_y() const { // возвращение y
+        return y_;
+    };
+
+    ~CPoint() { // Деструктор
+        cout << "Delete Point\n";
+    }
+};
+
+class CBroken_Line {
+protected:
+    vector<CPoint> l_;
+    float len = 0;
+    float Dist_Between_Points(CPoint &p1, CPoint &p2) {
+        return sqrt(pow((p1.get_x() - p2.get_x()), 2) + pow((p1.get_y() - p2.get_y()), 2));
+    }
+
+public:
+
+    CBroken_Line() { // конструктор по умолчанию
+    };
+
+    CBroken_Line(vector<CPoint> &mas) // конструктор
+    {
+        for (int i = 0; i < mas.size(); i++) {
+            l_.push_back(mas[i]);
+        }
+    };
+
+    CBroken_Line(const CBroken_Line &t) // конструктор копирования
+            : l_(t.l_)
+    {
+    };
+
+    CBroken_Line& operator=(const CBroken_Line &t) { // оператор присваивания
+        if (&t == this) {
+            return *this;
+        }
+        l_ = t.l_;
+
+        return *this;
+    };
+
+    float Len() {
+        len = 0;
+        if (l_.empty())
+            return 0;
+        else {
+            for (int i = 0; i < l_.size() - 1; i++) {
+                len += Dist_Between_Points(l_[i], l_[i + 1]);
+            }
+            return len;
+        }
+    };
+
+    ~CBroken_Line() { // деструктор
+        cout << "Delete Broken Line\n";
+    }
+};
+
+class CClosed_Broken_Line : public CBroken_Line {
+protected:
+    vector<CPoint> cl_;
+    float clen = 0;
+
+public:
+
+    CClosed_Broken_Line() { // конструктор по умолчанию
+    };
+
+    CClosed_Broken_Line(vector<CPoint> &cmas) // конструктор
+    {
+        for (int i = 0; i < cmas.size(); i++) {
+            cl_.push_back(cmas[i]);
+        }
+    };
+
+    CClosed_Broken_Line(const CClosed_Broken_Line &ct) // конструктор копирования
+        : cl_(ct.cl_)
+    {
+    };
+
+    CClosed_Broken_Line& operator=(const CClosed_Broken_Line &ct) { // оператор присваивания
+        if (&ct == this) {
+            return *this;
+        }
+        cl_ = ct.cl_;
+
+        return *this;
+    };
+
+    float cLen() {
+        if (cl_.empty())
+            return 0;
+        else {
+            for (int i = 0; i < cl_.size() - 1; i++) {
+                clen += Dist_Between_Points(cl_[i], cl_[i + 1]);
+            }
+            clen += Dist_Between_Points(cl_[0], cl_[cl_.size() - 1]);
+            return clen;
+        }
+    }
+    ~CClosed_Broken_Line() {
+        cout << "Delete Closet Broken Line\n";
+    }
+};
+
+class CPolygon : public CClosed_Broken_Line {
+protected:
+    float s_ = 0;
+    float p_ = 0;
+public:
+
+    CPolygon() { // конструктор по умолчанию
+    };
+
+    CPolygon(vector<CPoint> &mas_p) {
+        for (int i = 0; i < mas_p.size(); i++) {
+            cl_.push_back(mas_p[i]);
+        }
+    }
+
+    CPolygon(const CPolygon &pt) { // конструктор копирования
+        cl_ = pt.cl_;
+    };
+
+    CPolygon& operator=(const CPolygon &ct) { // оператор присваивания
+        if (&ct == this) {
+            return *this;
+        }
+        cl_ = ct.cl_;
+
+        return *this;
+    };
+
+    float Per() {
+        p_ = 0;
+        p_ = CClosed_Broken_Line::cLen();
+        return p_;
+    };
+
+    float Sqr() {
+        s_ = 0;
+        if (cl_.empty())
+            return 0;
+        else {
+            float help_x = cl_[0].get_x(), help_y = cl_[0].get_y();
+            for (int i = 0; i < cl_.size(); i++) {
+                if (i != cl_.size() - 1)
+                    s_ += (cl_[i].get_x() * cl_[i + 1].get_y() - cl_[i + 1].get_x() * cl_[i].get_y());
+                else
+                    s_ += (cl_[i].get_x() * help_y - help_x * cl_[i].get_y());
+            }
+            return 0.5 * (abs(s_));
+        }
+    };
+
+    ~CPolygon() {
+        cout << "Delete Polygon\n";
+    }
+};
+
+class CTriangle : public CPolygon {
+private:
+    float t_sqr_ = 0;
+    float t_per_ = 0;
+public:
+
+    CTriangle() {
+    };
+
+    CTriangle(vector<CPoint> &mas_t) {
+        // проверка на треугольник
+        for (int i = 0; i < mas_t.size(); i++) {
+            cl_.push_back(mas_t[i]);
+        }
+    }
+
+    CTriangle(const CTriangle &pt) { // конструктор копирования
+        cl_ = pt.cl_;
+    };
+
+    CTriangle& operator=(const CTriangle &ct) { // оператор присваивания
+        if (&ct == this) {
+            return *this;
+        }
+        cl_ = ct.cl_;
+
+        return *this;
+    };
+
+    float t_Sqr() {
+        t_sqr_ = 0;
+        t_sqr_ = CPolygon::Sqr();
+        return t_sqr_;
+    };
+
+    float t_Per() {
+        t_per_ = 0;
+        t_per_ = CClosed_Broken_Line::cLen();
+        return t_per_;
+    };
+
+    ~CTriangle() {
+        cout << "Delete Triangle\n";
+    }
+};
+
+class CTrapezoid : public CPolygon {
+private:
+    float trap_sqr_ = 0;
+    float trap_per_ = 0;
+public:
+
+    CTrapezoid() {
+    };
+
+    CTrapezoid(vector<CPoint> &mas_trap) {
+        // проверка на трапецию
+        for (int i = 0; i < mas_trap.size(); i++) {
+            cl_.push_back(mas_trap[i]);
+        }
+    }
+
+    CTrapezoid(const CTrapezoid &pt) { // конструктор копирования
+        cl_ = pt.cl_;
+    };
+
+    CTrapezoid& operator=(const CTrapezoid &ct) { // оператор присваивания
+        if (&ct == this) {
+            return *this;
+        }
+        cl_ = ct.cl_;
+
+        return *this;
+    };
+
+    float trap_Sqr() {
+        trap_sqr_ = 0;
+        trap_sqr_ = CPolygon::Sqr();
+        return trap_sqr_;
+    };
+
+    float trap_Per() {
+        trap_per_ = 0;
+        trap_per_ = CClosed_Broken_Line::cLen();
+        return trap_per_;
+    };
+
+    ~CTrapezoid() {
+        cout << "Delete Trapezoid\n";
+    }
+};
+
+class CRegular_Polygon : public CPolygon{
+private:
+    float r_sqr_ = 0;
+    float r_per_ = 0;
+public:
+
+    CRegular_Polygon() {
+    };
+
+    CRegular_Polygon(vector<CPoint> &mas_r) {
+        // проверка на пр. многоугольник
+        for (int i = 0; i < mas_r.size(); i++) {
+            cl_.push_back(mas_r[i]);
+        }
+    }
+
+    CRegular_Polygon(const CRegular_Polygon &pt) { // конструктор копирования
+        cl_ = pt.cl_;
+    };
+
+    CRegular_Polygon& operator=(const CRegular_Polygon &ct) { // оператор присваивания
+        if (&ct == this) {
+            return *this;
+        }
+        cl_ = ct.cl_;
+
+        return *this;
+    };
+
+    float r_Sqr() {
+        r_sqr_ = 0;
+        r_sqr_ = CPolygon::Sqr();
+        return r_sqr_;
+    };
+
+    float r_Per() {
+        r_per_ = 0;
+        r_per_ = CClosed_Broken_Line::cLen();
+        return r_per_;
+    };
+
+    ~CRegular_Polygon() {
+        cout << "Delete Regular Polygon\n";
+    }
+};
+
+int main() {
+
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    CPoint a;
+    cout << a.get_x() << " " << a.get_y() << "\n";
+    CPoint b(1, 2);
+    cout << b.get_x() << " " << b.get_y() << "\n";
+    CPoint c(b);
+    cout << c.get_x() << " " << c.get_y() << "\n";
+    CPoint d = b;
+    cout << d.get_x() << " " << d.get_y() << "\n";
+    cout << d.Dist_To_Zero() << endl;
+    CPoint e;
+    e = b;
+    cout << e.get_x() << " " << e.get_y() << "\n";
+
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    vector<CPoint> mas(3);
+    mas[0] = CPoint(1, 2);
+    mas[1] = CPoint(4, 6);
+    mas[2] = CPoint(8, 3);
+    CBroken_Line l1(mas);
+    cout << l1.Len() << "\n";
+    CBroken_Line l2(l1);
+    CBroken_Line l3 = l2;
+    CBroken_Line l4;
+    cout << l4.Len() << "\n";
+    l4 = l3;
+    cout << l4.Len() << "\n";
+
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    vector<CPoint> cmas(3);
+    cmas[0] = CPoint(1, 2);
+    cmas[1] = CPoint(4, 6);
+    cmas[2] = CPoint(8, 3);
+    CClosed_Broken_Line cl1(cmas);
+    cout << cl1.cLen() << "\n";
+    CClosed_Broken_Line cl2(cl1);
+    CClosed_Broken_Line cl3 = cl2;
+    CClosed_Broken_Line cl4;
+    cout << cl4.cLen() << "\n";
+    cl4 = cl3;
+    cout << cl4.cLen() << "\n";
+
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    vector<CPoint> mas_p(5);
+    mas_p[0] = CPoint(2, 1);
+    mas_p[1] = CPoint(4, 3);
+    mas_p[2] = CPoint(6, 6);
+    mas_p[3] = CPoint(8, 7);
+    mas_p[4] = CPoint(9, 4);
+    CPolygon p1(mas_p);
+    cout << p1.Per() << "\n";
+    cout << p1.Sqr() << "\n";
+    CPolygon p2(p1);
+    CPolygon p3 = p2;
+    CPolygon p4;
+    cout << p4.Per() << "\n";
+    cout << p4.Sqr() << "\n";
+    p4 = p3;
+    cout << p4.Per() << "\n";
+    cout << p4.Sqr() << "\n";
+
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    vector<CPoint> mas_t(3);
+    mas_t[0] = CPoint(2, 1);
+    mas_t[1] = CPoint(4, 3);
+    mas_t[2] = CPoint(6, 6);
+    CTriangle t1(mas_t);
+    cout << t1.t_Per() << "\n";
+    cout << t1.t_Sqr() << "\n";
+    CTriangle t2(t1);
+    CTriangle t3 = t2;
+    CTriangle t4;
+    cout << t4.t_Per() << "\n";
+    cout << t4.t_Sqr() << "\n";
+    t4 = t3;
+    cout << t4.t_Per() << "\n";
+    cout << t4.t_Sqr() << "\n";
+
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    vector<CPoint> mas_trap(4);
+    mas_trap[0] = CPoint(2, 1);
+    mas_trap[1] = CPoint(4, 5);
+    mas_trap[2] = CPoint(6, 6);
+    mas_trap[3] = CPoint(8, 3);
+    CTrapezoid trap1(mas_trap);
+    cout << trap1.trap_Per() << "\n";
+    cout << trap1.trap_Sqr() << "\n";
+    CTrapezoid trap2(trap1);
+    CTrapezoid trap3 = trap2;
+    CTrapezoid trap4;
+    cout << trap4.trap_Per() << "\n";
+    cout << trap4.trap_Sqr() << "\n";
+    trap4 = trap3;
+    cout << trap4.trap_Per() << "\n";
+    cout << trap4.trap_Sqr() << "\n";
+
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    vector<CPoint> mas_r(5);
+    mas_r[0] = CPoint(2, 1);
+    mas_r[1] = CPoint(4, 3);
+    mas_r[2] = CPoint(6, 6);
+    mas_r[3] = CPoint(8, 7);
+    mas_r[4] = CPoint(9, 4);
+    CRegular_Polygon r1(mas_r);
+    cout << r1.r_Per() << "\n";
+    cout << r1.r_Sqr() << "\n";
+    CRegular_Polygon r2(r1);
+    CRegular_Polygon r3 = r2;
+    CRegular_Polygon r4;
+    cout << r4.r_Per() << "\n";
+    cout << r4.r_Sqr() << "\n";
+    r4 = r3;
+    cout << r4.r_Per() << "\n";
+    cout << r4.r_Sqr() << "\n";
+
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+
+    return 0;
+}

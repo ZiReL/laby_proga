@@ -85,8 +85,7 @@ public:
     };
 
     CPolynomial &operator*=(const float &fl) {
-        for (int i = 0; i < this->polyn_.size(); i++)
-            this->polyn_[i] *= fl;
+        *this = *this * fl;
         return *this;
     };
 
@@ -109,21 +108,7 @@ public:
     };
 
     CPolynomial &operator*=(const CPolynomial &pr) {
-        vector<float> vmas(this->polyn_);
-        this->polyn_.resize(((vmas.size() - 1) + (pr.polyn_.size() - 1) + 1), 0);
-        for (int i = 0; i < vmas.size(); i++)
-            for (int j = 0; j < pr.polyn_.size(); j++) {
-                if ((i != 0) and (j != 0))
-                    this->polyn_[i + j] += vmas[i] * pr.polyn_[j];
-                else {
-                    if ((i == 0) and (j != 0))
-                        this->polyn_[j] += vmas[0] * pr.polyn_[j];
-                    else if ((j == 0) and (i != 0))
-                        this->polyn_[i] += vmas[i] * pr.polyn_[0];
-                    else
-                        this->polyn_[0] += vmas[0] * pr.polyn_[0];
-                }
-            }
+        *this = *this * pr;
         return *this;
     };
 
@@ -136,8 +121,7 @@ public:
     };
 
     CPolynomial &operator/=(const float &fl) {
-        for (int i = 0; i < this->polyn_.size(); i++)
-            this->polyn_[i] /= fl;
+        *this = *this / fl;
         return *this;
     };
 

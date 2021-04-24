@@ -1,0 +1,69 @@
+#include <iostream>
+#include <vector>
+#include <map>
+#include "pugixml.cpp"
+
+using namespace std;
+
+struct Stop_info {
+    string number;
+    string type;
+    string object_type;
+    string name;
+    vector<string> location;
+    string routes;
+    vector<double> coord;
+};
+
+class CTransport{
+private:
+    vector<Stop_info> inf;
+    map<string, int> map_routes;
+    map<string, int> map_location;
+public:
+
+    void parsing() {
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_file("doc.xml");
+        Stop_info vsp;
+        for (pugi::xml_node tool = doc.child("dataset").child("transport_station"); tool; tool = tool.next_sibling()) {
+
+            vsp.number = tool.child("number").child_value();
+
+            vsp.type = tool.child("type_of_vehicle").child_value();
+
+            string str_loc = tool.child("location").child_value();
+            if (str_loc.find(',') != -1) {
+                vsp.location.resize(2);
+                vsp.location[0] = str_loc.substr(0, str_loc.find(','));
+                vsp.location[1] = str_loc.substr(str_loc.find(',') + 2, str_loc.length());
+            }
+            else {
+                vsp.location.resize(1);
+                vsp.location[0] = tool.child("location").child_value();
+            }
+
+            vsp.routes = tool.child("routes").child_value();
+
+            string str_coord = tool.child("coordinates").child_value();
+            vsp.coord.resize(2);
+            vsp.coord[0] = atof(str_coord.substr(0, str_coord.find(',')).c_str());
+            vsp.coord[1] = atof(str_coord.substr(str_coord.find(',') + 1, str_coord.length()).c_str());
+
+            vsp.object_type = tool.child("object_type").child_value();
+
+            vsp.name = tool.child("the_official_name").child_value();
+
+            inf.push_back(vsp);
+        }
+
+        int a = 0;
+    }
+};
+
+int main() {
+    system("chcp 65001");
+
+    CTransport route;
+    route.parsing();
+}

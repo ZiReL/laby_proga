@@ -1,0 +1,79 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+template<class T, class CIterator>
+bool all_of(CIterator begin, CIterator end, bool (&func)(T)) {
+    for (;begin != end; begin++)
+        if(func(*begin))
+            return true;
+    return false;
+}
+
+template<class T, class CIterator>
+bool any_of(CIterator begin, CIterator end, const T& value) {
+}
+
+template<class T, class CIterator>
+bool none_of(CIterator begin, CIterator end, const T& value) {
+}
+
+template<class T, class CIterator>
+bool one_of(CIterator begin, CIterator end, const T& value) {
+}
+
+template<class T, class CIterator>
+bool is_sorted(CIterator begin, CIterator end, const T& value) {
+}
+
+template<class T, class CIterator>
+bool is_partitioned(CIterator begin, CIterator end, const T& value) {
+}
+
+template<class T, class CIterator>
+bool find_not(CIterator begin, CIterator end, const T& value) {
+}
+
+template<class T, class CIterator>
+bool find_backward(CIterator begin, CIterator end, const T& value) {
+}
+
+template<class T, class CIterator>
+bool is_palindrome(CIterator begin, CIterator end, const T& value) {
+}
+
+int main() {
+    system("chcp 65001");
+
+    vector<int> mas = {1, 2, 3, 4, 5};
+    for (int i = 0; i < mas.size(); i++)
+        cout << mas[i] << ' ';
+
+//    string pred = "<";
+//    int n = 3;
+//    cout << "\n1. all_of    true - все элементы удовлетворяют предикату" << pred << ' ' << n << "\n";
+//    cout << all_of(mas.begin(), mas.end(), less<int>(3)) << "\n";
+
+//    pred = "=";
+//    n = 5;
+//    cout << "2. any_of    true - хотя бы один элемент удовлетворяет предикату" << pred << ' ' << n << "\n";
+//    //cout << any_of(mas.begin(), mas.end(), pred, n) << "\n";
+//
+//    pred = "!=";
+//    n = 4;
+//    cout << "3. none_of   true - все элементы не удовлетворяют предикату" << pred << ' ' << n << "\n";
+//    //cout << none_of(mas.begin(), mas.end(), pred, n) << "\n";
+//
+//    pred = ">=";
+//    n = 5;
+//    cout << "3. none_of   true - один элемент удовлетворяют предикату" << pred << ' ' << n << "\n";
+//    //cout << one_of(mas.begin(), mas.end(), pred, n) << "\n";
+}
+// '=' - equal_to
+// '!=' - not_equal_to
+// '>' - greater
+// '<' - less
+// '>=' - greater_equal
+// '<=' - less_equal

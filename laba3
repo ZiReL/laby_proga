@@ -1,63 +1,214 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <math.h>
 #include "pugixml.cpp"
 
 using namespace std;
 
 struct Stop_info {
-    string number;
     string type;
-    string object_type;
-    string name;
-    vector<string> location;
-    string routes;
-    vector<double> coord;
+    vector<pair<double, double>> coord;
+    int number_of_stop = 0;
+    double distance = 0;
 };
 
-class CTransport{
-private:
-    vector<Stop_info> inf;
-    map<string, int> map_routes;
-    map<string, int> map_location;
+class CTransport {
 public:
+    Stop_info info;
 
-    void parsing() {
+    void parsing(string type_t, map<string, Stop_info> &type) {
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file("doc.xml");
-        Stop_info vsp;
+
+        string str_routes;
+        vector<string> routes;
+        int s = 0;
         for (pugi::xml_node tool = doc.child("dataset").child("transport_station"); tool; tool = tool.next_sibling()) {
 
-            vsp.number = tool.child("number").child_value();
+            str_routes = tool.child("routes").child_value();
+            for (int i = 0; i < str_routes.size(); i++)
+                if ((str_routes[i] == ',') or (str_routes[i] == '.')) {
+                    routes.push_back(str_routes.substr(s, i - s));
+                    s = i + 1;
+                }
+            routes.push_back(str_routes.substr(s));
+            s = 0;
 
-            vsp.type = tool.child("type_of_vehicle").child_value();
+            for (int i = 0; i < routes.size(); i++) {
+                parsing_type(tool);
+                parsing_coord(tool, type_t, type, routes, i);
 
-            string str_loc = tool.child("location").child_value();
-            if (str_loc.find(',') != -1) {
-                vsp.location.resize(2);
-                vsp.location[0] = str_loc.substr(0, str_loc.find(','));
-                vsp.location[1] = str_loc.substr(str_loc.find(',') + 2, str_loc.length());
+
+                string str_coord = tool.child("coordinates").child_value();
+                if ((type.find(routes[i]) != type.end()) and (info.type == type_t)) {
+                    type[routes[i]].coord.emplace_back(atof(str_coord.substr(0, 9).c_str()),
+                                                       atof(str_coord.substr(10, 9).c_str()));
+                    type[routes[i]].number_of_stop++;
+                }
+                type.insert(make_pair(routes[i], info));
+                info.coord.clear();
+                info.type.clear();
             }
-            else {
-                vsp.location.resize(1);
-                vsp.location[0] = tool.child("location").child_value();
+            routes.clear();
+        }
+    }
+
+    void parsing_streets(map<string, int> &street) {
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_file("doc.xml");
+
+        vector<string> streets;
+        int s = 0;
+        for (pugi::xml_node tool = doc.child("dataset").child("transport_station"); tool; tool = tool.next_sibling()) {
+            string str_street = tool.child("location").child_value();
+            if (!str_street.empty()) {
+                for (int i = 0; i < str_street.size(); i++)
+                    if (str_street[i] == ',') {
+                        streets.push_back(str_street.substr(s, i - s));
+                        s = i + 2;
+                    }
+                streets.push_back(str_street.substr(s));
+                s = 0;
             }
 
-            vsp.routes = tool.child("routes").child_value();
+            for (int i = 0; i < streets.size(); i++) {
+                auto it = street.find(streets[i]);
+                if (street.find(streets[i]) == street.end())
+                    street.insert(make_pair(streets[i], 1));
+                else
+                    it->second++;
 
+            }
+        streets.clear();
+        }
+        int a = 0;
+    }
+
+    void parsing_type(pugi::xml_node &tool) {
+        info.type = tool.child("type_of_vehicle").child_value();
+    }
+
+    void
+    parsing_coord(pugi::xml_node &tool, string type_t, map<string, Stop_info> &type, vector<string> &routes, int i) {
+        if (info.type == type_t) {
             string str_coord = tool.child("coordinates").child_value();
-            vsp.coord.resize(2);
-            vsp.coord[0] = atof(str_coord.substr(0, str_coord.find(',')).c_str());
-            vsp.coord[1] = atof(str_coord.substr(str_coord.find(',') + 1, str_coord.length()).c_str());
-
-            vsp.object_type = tool.child("object_type").child_value();
-
-            vsp.name = tool.child("the_official_name").child_value();
-
-            inf.push_back(vsp);
+            info.coord.emplace_back(atof(str_coord.substr(0, 9).c_str()), atof(str_coord.substr(10, 9).c_str()));
         }
 
-        int a = 0;
+    }
+
+    double MST(Stop_info &info) {
+        if (info.number_of_stop != 0) {
+            vector<vector<double>> mas(info.coord.size(), vector<double>(info.coord.size()));
+            vector<double> dist(info.coord.size(), 2900000);
+            vector<bool> visit(info.coord.size(), false);
+
+            for (int i = 0; i < info.coord.size(); i++)
+                for (int j = 0; j < info.coord.size(); j++)
+                    if (i != j)
+                        mas[i][j] = 6370 * atan2(sqrt(pow(cos(info.coord[j].first / 180 * M_PI) *
+                                                          sin(info.coord[j].second / 180 * M_PI -
+                                                              info.coord[i].second / 180 * M_PI), 2) +
+                                                      pow(cos(info.coord[i].first / 180 * M_PI) *
+                                                          sin(info.coord[j].first / 180 * M_PI) -
+                                                          sin(info.coord[i].first / 180 * M_PI) *
+                                                          cos(info.coord[j].first / 180 * M_PI) *
+                                                          cos(info.coord[j].second / 180 * M_PI -
+                                                              info.coord[i].second / 180 * M_PI), 2)),
+                                                 sin(info.coord[i].first / 180 * M_PI) *
+                                                 sin(info.coord[j].first / 180 * M_PI) +
+                                                 cos(info.coord[i].first / 180 * M_PI) *
+                                                 cos(info.coord[j].first / 180 * M_PI) *
+                                                 cos(info.coord[j].second / 180 * M_PI -
+                                                     info.coord[i].second / 180 * M_PI));
+
+            dist[0] = 0;
+            for (int i = 0; i < mas.size(); i++) {
+                int min_ind = -1;
+
+                for (int j = 0; j < mas.size(); j++)
+                    if (!visit[j] and ((min_ind == -1) or (dist[j] < dist[min_ind])))
+                        min_ind = j;
+
+                visit[min_ind] = true;
+
+                for (int j = 0; j < mas.size(); j++)
+                    if (!visit[j] and (mas[min_ind][j] < dist[j]) and (min_ind != j))
+                        dist[j] = mas[min_ind][j];
+            }
+            double min_span_tree = 0;
+            for (int i = 0; i < info.coord.size(); i++)
+                min_span_tree += dist[i];
+
+            return min_span_tree;
+        } else
+            return 0;
+    }
+
+    void answers() {
+        map<string, Stop_info> bus;
+        map<string, Stop_info> trolleybus;
+        map<string, Stop_info> tram;
+        map<string, int> street;
+
+        parsing("Автобус", bus);
+        parsing("Троллейбус", trolleybus);
+        parsing("Трамвай", tram);
+        parsing_streets(street);
+
+        string n;
+        cout << "\n\n     №1     \n";
+        cout << "Наибольшие маршруты по остановкам:\n";
+        answer_max_route(bus, n);
+        cout << "Для Автобуса: Маршрут " << n << " - остановок " << bus[n].number_of_stop << "\n";
+        answer_max_route(trolleybus, n);
+        cout << "Для Троллейбусов: Маршрут " << n << " - остановок " << trolleybus[n].number_of_stop << "\n";
+        answer_max_route(tram, n);
+        cout << "Для Трамваев: Маршрут " << n << " - остановок " << tram[n].number_of_stop << "\n";
+
+        cout << "\n\n     №2     \n";
+        cout << "Самый длинный маршрут среди:";
+        answer_max_distance(bus, n);
+        cout << "Автобусов: Маршрут " << n << " - расстояние " << bus[n].distance << "\n";
+        answer_max_distance(trolleybus, n);
+        cout << "Троллейбусов: Маршрут " << n << " - расстояние " << trolleybus[n].distance << "\n";
+        answer_max_distance(tram, n);
+        cout << "Трамваев: Маршрут " << n << " - расстояние " << tram[n].distance << "\n";
+
+        cout << "\n\n     №3     \n";
+        answer_max_streets(street, n);
+        cout << "Улица " << n << " с наибольшим числом остановок: " << street[n];
+    }
+
+    void answer_max_route(map<string, Stop_info> &type, string &n) {
+        int max = 0;
+        for (auto it = type.begin(); it != type.end(); it++)
+            if (it->second.number_of_stop > max) {
+                max = it->second.number_of_stop;
+                n = it->first;
+            }
+    }
+
+    void answer_max_distance(map<string, Stop_info> &type, string &n) {
+        double max = 0;
+        for (auto it = type.begin(); it != type.end(); it++) {
+            it->second.distance = MST(it->second);
+            if (it->second.distance > max) {
+                max = it->second.distance;
+                n = it->first;
+            }
+        }
+    }
+
+    void answer_max_streets(map<string, int> &street, string &n) {
+        int max = 0;
+        for (auto it = street.begin(); it != street.end(); it++)
+            if (it->second > max) {
+                max = it->second;
+                n = it->first;
+            }
     }
 };
 
@@ -65,5 +216,5 @@ int main() {
     system("chcp 65001");
 
     CTransport route;
-    route.parsing();
+    route.answers();
 }

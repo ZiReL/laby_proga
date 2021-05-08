@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <set>
 
 using namespace std;
 
@@ -77,8 +78,8 @@ bool one_of(CIterator begin, CIterator end, const T &n, bool (&func)(T, T)) {
 
 template<class T, class CIterator>
 bool is_sorted(CIterator begin, CIterator end, bool (&func)(T, T)) {
-    CIterator vend = end - 1;
-    for (;begin != vend; begin++)
+    end--;
+    for (;begin != end; begin++)
         if (!func(*begin, *(next(begin))))
             return false;
     return true;
@@ -145,8 +146,8 @@ int main() {
     system("chcp 65001");
 
     vector<int> mas = {1, 2, 3, 2, 1};
-    for (int i = 0; i < mas.size(); i++)
-        cout << mas[i] << ' ';
+
+    set<int> mas2 = {1, 2, 3, 2, 1};
 
     int n = 4;
     cout << "\n\n1. all_of    true - все элементы удовлетворяют предикату\n";
@@ -154,7 +155,7 @@ int main() {
 
     n = 6;
     cout << "\n2. any_of    true - хотя бы один элемент удовлетворяет предикату\n";
-    cout << any_of(mas.begin(), mas.end(), n, equal_to_<int>) << "\n";
+    cout << any_of(mas2.begin(), mas2.end(), n, equal_to_<int>) << "\n";
 
     n = 5;
     cout << "\n3. none_of   true - все элементы не удовлетворяют предикату\n";
@@ -165,7 +166,7 @@ int main() {
     cout << one_of(mas.begin(), mas.end(), n, less_equal_) << "\n";
 
     cout << "\n5. is_sorted   true - все элементы находятся в отсортированном порядке относительно некоторого критерия\n";
-    cout << is_sorted(mas.begin(), mas.end(), greater_<int>) << "\n";
+    cout << is_sorted(mas2.begin(), mas2.end(), greater_<int>) << "\n";
 
     mas = {4, 3, 2, 1, 2, 3};
     cout << "\n6. is_partitioned   true - все элементы делятся на удовлетворяющие и не удовлетворяющие некоторому предикату\n";

@@ -5,6 +5,22 @@
 using namespace std;
 
 template<class T>
+class CPoint {
+public:
+    T  x1, x2, x3;
+
+    bool operator==( const CPoint &p) {
+        if ((this->x1 == p.x1) and (this->x2 == p.x2) and (this->x3 == p.x3))
+            return true;
+        return false;
+    }
+
+    bool operator!=( const CPoint &p) {
+        return !(this == p);
+    }
+};
+
+template<class T>
 bool equal_to_(T x1, T x2) {
     return x1 == x2;
 }
@@ -146,16 +162,21 @@ int main() {
     system("chcp 65001");
 
     vector<int> mas = {1, 2, 3, 2, 1};
+    int n;
 
     set<int> mas2 = {1, 2, 3, 2, 1};
 
-    int n = 4;
-    cout << "\n\n1. all_of    true - все элементы удовлетворяют предикату\n";
-    cout << all_of(mas.begin(), mas.end(), n, less_<int>) << "\n";
+    vector<CPoint<int>> mas3;
 
-    n = 6;
+    CPoint<int> p = {5, 6, 7};
+
+    n = 7;
+    cout << "\n\n1. all_of    true - все элементы удовлетворяют предикату\n";
+    cout << all_of(mas.begin(), mas.end(), n, less_) << "\n";
+
+    mas3 = {{5, 7, 8}, {5, 6, 7}};
     cout << "\n2. any_of    true - хотя бы один элемент удовлетворяет предикату\n";
-    cout << any_of(mas2.begin(), mas2.end(), n, equal_to_<int>) << "\n";
+    cout << any_of(mas3.begin(), mas3.end(), p, equal_to_) << "\n";
 
     n = 5;
     cout << "\n3. none_of   true - все элементы не удовлетворяют предикату\n";

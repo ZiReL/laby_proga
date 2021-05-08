@@ -1,79 +1,193 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
 
 using namespace std;
 
+template<class T>
+bool equal_to_(T x1, T x2) {
+    return x1 == x2;
+}
+
+template<class T>
+bool not_equal_to_(T x1, T x2) {
+    return x1 != x2;
+}
+
+template<class T>
+bool less_(T x1, T x2) {
+    return x1 < x2;
+}
+
+template<class T>
+bool less_equal_(T x1, T x2) {
+    return x1 <= x2;
+}
+
+template<class T>
+bool greater_(T x1, T x2) {
+    return x1 > x2;
+}
+
+template<class T>
+bool greater_equal_(T x1, T x2) {
+    return x1 >= x2;
+}
+
+template<class T>  // для целочисленного типа
+bool parity_(T x1, T x2) {
+    return ((x1 % 2) == (x2 % 2));
+}
+
+
+
 template<class T, class CIterator>
-bool all_of(CIterator begin, CIterator end, bool (&func)(T)) {
+bool all_of(CIterator begin, CIterator end, const T &n, bool (&func)(T, T)) {
     for (;begin != end; begin++)
-        if(func(*begin))
+        if (!func(*begin, n))
+            return false;
+    return true;
+}
+
+template<class T, class CIterator>
+bool any_of(CIterator begin, CIterator end, const T &n, bool (&func)(T, T)) {
+    for (;begin != end; begin++)
+        if (func(*begin, n))
             return true;
     return false;
 }
 
 template<class T, class CIterator>
-bool any_of(CIterator begin, CIterator end, const T& value) {
+bool none_of(CIterator begin, CIterator end, const T &n, bool (&func)(T, T)) {
+    for (;begin != end; begin++)
+        if (func(*begin, n))
+            return false;
+    return true;
 }
 
 template<class T, class CIterator>
-bool none_of(CIterator begin, CIterator end, const T& value) {
+bool one_of(CIterator begin, CIterator end, const T &n, bool (&func)(T, T)) {
+    int k = 0;
+    for (;begin != end; begin++)
+        if (func(*begin, n))
+            k++;
+    if (k == 1)
+        return true;
+    return false;
 }
 
 template<class T, class CIterator>
-bool one_of(CIterator begin, CIterator end, const T& value) {
+bool is_sorted(CIterator begin, CIterator end, bool (&func)(T, T)) {
+    CIterator vend = end - 1;
+    for (;begin != vend; begin++)
+        if (!func(*begin, *(next(begin))))
+            return false;
+    return true;
 }
 
 template<class T, class CIterator>
-bool is_sorted(CIterator begin, CIterator end, const T& value) {
+bool is_partitioned(CIterator begin, CIterator end, bool (&func)(T, T)) {
+    begin++;
+    if (func(*(prev(begin)),*begin)) {
+        while ((begin != end) and func(*(prev(begin)),*begin))
+            begin++;
+        if (begin == end)
+            return false;
+        while (begin != end) {
+            if (func(*(prev(begin)), *begin))
+                return false;
+            begin++;
+        }
+    }
+    else {
+        while ((begin != end) and !func(*(prev(begin)),*begin))
+            begin++;
+        if (begin == end)
+            return false;
+        while (begin != end) {
+            if (!func(*(prev(begin)), *begin))
+                return false;
+            begin++;
+        }
+    }
+    return true;
 }
 
 template<class T, class CIterator>
-bool is_partitioned(CIterator begin, CIterator end, const T& value) {
+T find_not(CIterator begin, CIterator end, const T& value) {  // элемент точно найдется
+    for (;begin != end; begin++)
+        if (*begin != value)
+            return *begin;
+    //throw "error";
 }
 
 template<class T, class CIterator>
-bool find_not(CIterator begin, CIterator end, const T& value) {
+T find_backward(CIterator begin, CIterator end, const T& value) {  // элемент точно найдется
+    end--;
+    for (;end >= begin; end--)
+        if (*end == value)
+            return *end;
+    //throw "error";
 }
 
 template<class T, class CIterator>
-bool find_backward(CIterator begin, CIterator end, const T& value) {
-}
-
-template<class T, class CIterator>
-bool is_palindrome(CIterator begin, CIterator end, const T& value) {
+bool is_palindrome(CIterator begin, CIterator end, bool (&func)(T, T)) {
+    end--;
+    while (begin < end) {
+        if (!func(*begin, *end))
+            return false;
+        begin++;
+        end--;
+    }
+    return true;
 }
 
 int main() {
     system("chcp 65001");
 
-    vector<int> mas = {1, 2, 3, 4, 5};
+    vector<int> mas = {1, 2, 3, 2, 1};
     for (int i = 0; i < mas.size(); i++)
         cout << mas[i] << ' ';
 
-//    string pred = "<";
-//    int n = 3;
-//    cout << "\n1. all_of    true - все элементы удовлетворяют предикату" << pred << ' ' << n << "\n";
-//    cout << all_of(mas.begin(), mas.end(), less<int>(3)) << "\n";
+    int n = 4;
+    cout << "\n\n1. all_of    true - все элементы удовлетворяют предикату\n";
+    cout << all_of(mas.begin(), mas.end(), n, less_<int>) << "\n";
 
-//    pred = "=";
-//    n = 5;
-//    cout << "2. any_of    true - хотя бы один элемент удовлетворяет предикату" << pred << ' ' << n << "\n";
-//    //cout << any_of(mas.begin(), mas.end(), pred, n) << "\n";
-//
-//    pred = "!=";
-//    n = 4;
-//    cout << "3. none_of   true - все элементы не удовлетворяют предикату" << pred << ' ' << n << "\n";
-//    //cout << none_of(mas.begin(), mas.end(), pred, n) << "\n";
-//
-//    pred = ">=";
-//    n = 5;
-//    cout << "3. none_of   true - один элемент удовлетворяют предикату" << pred << ' ' << n << "\n";
-//    //cout << one_of(mas.begin(), mas.end(), pred, n) << "\n";
+    n = 6;
+    cout << "\n2. any_of    true - хотя бы один элемент удовлетворяет предикату\n";
+    cout << any_of(mas.begin(), mas.end(), n, equal_to_<int>) << "\n";
+
+    n = 5;
+    cout << "\n3. none_of   true - все элементы не удовлетворяют предикату\n";
+    cout << none_of(mas.begin(), mas.end(), n, greater_equal_<int>) << "\n";
+
+    n = 1;
+    cout << "\n4. one_of    true - один элемент удовлетворяют предикату\n";
+    cout << one_of(mas.begin(), mas.end(), n, less_equal_) << "\n";
+
+    cout << "\n5. is_sorted   true - все элементы находятся в отсортированном порядке относительно некоторого критерия\n";
+    cout << is_sorted(mas.begin(), mas.end(), greater_<int>) << "\n";
+
+    mas = {4, 3, 2, 1, 2, 3};
+    cout << "\n6. is_partitioned   true - все элементы делятся на удовлетворяющие и не удовлетворяющие некоторому предикату\n";
+    cout << is_partitioned(mas.begin(), mas.end(), greater_<int>) << "\n";
+
+    n = 1;
+    cout << "\n7. find_not   true - поиск элемента, не равного заданному\n";
+    cout << find_not(mas.begin(), mas.end(), n) << "\n";
+
+    mas = {7, 2, 3, 2, 1, 4};
+    n = 7;
+    cout << "\n8. find_backward   true - поиск элемента, равного заданному с конца\n";
+    cout << find_backward(mas.begin(), mas.end(), n) << "\n";
+
+    mas = {1, 2, 3, 3, 2, 1};
+    cout << "\n9. is_palindrome   true - палиндром\n";
+    cout << is_palindrome(mas.begin(), mas.end(), equal_to_<int>) << "\n";
 }
-// '=' - equal_to
-// '!=' - not_equal_to
-// '>' - greater
-// '<' - less
-// '>=' - greater_equal
-// '<=' - less_equal
+// '=' - equal_to_
+// '!=' - not_equal_to_
+// '>' - greater_
+// '<' - less_
+// '>=' - greater_equal_
+// '<=' - less_equal_
+// 'четность' - parity_

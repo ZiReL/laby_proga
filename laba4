@@ -130,26 +130,32 @@ bool is_partitioned(CIterator begin, CIterator end, bool (&func)(T, T)) {
 }
 
 template<class T, class CIterator>
-T find_not(CIterator begin, CIterator end, const T& value) {  // элемент точно найдется
+CIterator find_not(CIterator begin, CIterator end, const T& value) {
+    if (begin == end)
+        return begin;
     for (;begin != end; begin++)
         if (*begin != value)
-            return *begin;
-    //throw "error";
+            return begin;
+    return end;
 }
 
 template<class T, class CIterator>
-T find_backward(CIterator begin, CIterator end, const T& value) {  // элемент точно найдется
-    end--;
-    for (;end >= begin; end--)
-        if (*end == value)
-            return *end;
-    //throw "error";
+CIterator find_backward(CIterator begin, CIterator end, const T& value) {
+    if (begin == end)
+        return begin;
+    CIterator vsp = end;
+    for (;begin != end; begin++)
+        if (*begin == value)
+            vsp = begin;
+    return vsp;
 }
 
 template<class T, class CIterator>
 bool is_palindrome(CIterator begin, CIterator end, bool (&func)(T, T)) {
+    if (begin == end)
+        return begin;
     end--;
-    while (begin < end) {
+    while ((begin != end) or (begin != prev(end))) {
         if (!func(*begin, *end))
             return false;
         begin++;
@@ -195,12 +201,12 @@ int main() {
 
     n = 1;
     cout << "\n7. find_not   true - поиск элемента, не равного заданному\n";
-    cout << find_not(mas.begin(), mas.end(), n) << "\n";
+    cout << *find_not(mas.begin(), mas.end(), n) << "\n";
 
-    mas = {7, 2, 3, 2, 1, 4};
+    mas = {2, 3, 2, 1, 4};
     n = 7;
     cout << "\n8. find_backward   true - поиск элемента, равного заданному с конца\n";
-    cout << find_backward(mas.begin(), mas.end(), n) << "\n";
+    cout << *find_backward(mas.begin(), mas.end(), n) << "\n";
 
     mas = {1, 2, 3, 3, 2, 1};
     cout << "\n9. is_palindrome   true - палиндром\n";

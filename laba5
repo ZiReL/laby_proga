@@ -1,0 +1,47 @@
+#include <iostream>
+#include <iterator>
+#include <algorithm>
+
+using namespace std;
+
+template <class T>
+class circ_Buffer {
+private:
+    int head_buffer = 0;
+    int tail_buffer = 0;
+    int capacity = 0;
+    T* buffer = nullptr;
+public:
+    void push_back(T value) {
+        if (tail_buffer >= capacity) {
+            buffer[tail_buffer] = value;
+            tail_buffer = capacity;
+        }
+        else {
+            buffer[tail_buffer] = value;
+            tail_buffer++;
+        }
+    }
+
+//    void pop_back() {
+//        buffer[tail_buffer] = 0;
+//        tail_buffer--;
+//    }
+//
+//    void push_front(T value) {
+//        if (tail_buffer == capacity) {
+//            buffer[head_buffer] = value;
+//        }
+//        else {
+//            for (int i = head_buffer; i < tail_buffer; i++) {
+//                buffer[i + 1] = buffer[i];
+//            }
+//
+//            buffer[head_buffer] = value;
+//            head_buffer++;
+//        }
+//    }
+};
+
+int main() {
+}
